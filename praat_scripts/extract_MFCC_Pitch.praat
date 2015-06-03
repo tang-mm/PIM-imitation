@@ -1,8 +1,11 @@
 # CHANGE THIS TO YOUR DIRECTORY
-#directory_org$ = "/home/tangmm/telecom/Cours-3A/PIM-imitation/PreCorpusImitateurs/test/wav"
-directory_org$ = "/media/winE/[TelecomParisTech]/Cours-3A/PIM-imitation/test/wav"
-dir_mfcc$ = "/media/winE/[TelecomParisTech]/Cours-3A/PIM-imitation/test/mfcc"
-dir_pitch$ = "/media/winE/[TelecomParisTech]/Cours-3A/PIM-imitation/test/pitch"
+
+base_dir$ = "/media/winE/[TelecomParisTech]/Cours-3A/PIM-imitation/test/to_Alliot/"
+directory_org$ = base_dir$ + "wav/"
+dir_mfcc$ = base_dir$ + "mfcc/"
+dir_pitch$ = base_dir$ + "pitch/"
+dir_formant_1$ = base_dir$ + "formant_1/"
+dir_formant_2$ = base_dir$ + "formant_2/"
 
 # FIND ALL WAV FILES IN THE DIRECTORY
 Create Strings as file list... list 'directory_org$'/*.wav
@@ -37,22 +40,32 @@ for ifile to numberOfFiles
     pitch_voiced_unvoiced_cost = 0.14
  
     select Sound 'baseFile$'
-    To Pitch: 0.010, 70, 600
-    #To Pitch: time_step, minimum_pitch,  maximum_pitch
-    Write to text file... 'dir_pitch$'/'baseFile$'.txt
+    To Pitch: 0.010, 70, 600    
+    # time_step, minimum_pitch,  maximum_pitch
+    To Matrix
+    Write to matrix text file... 'dir_pitch$'/'baseFile$'.txt
 
     # f0 = Get quantile: 0, 0, 0.50, "Hertz"
 	# appendFileLine: 'dir_pitch$'/'baseFile$'.txt, " : F0 = ", f0
 
 
     # GET FORMANT----------------------
-
+    # Default max =5500 Hz (adult female); for a male, use 5000 Hz; young child, beyond 5500Hz.
+    select Sound 'baseFile$'
 	#To Formant (burg)... time_step maximum_number_of_formants maximum_formant window_length preemphasis_from
-    
+   To Formant (burg)... 0.010 5 5000 0.025 50
+    # F1
+    To Matrix... 1      
+    Write to matrix text file... 'dir_formant_1$'/'baseFile$'.txt
+    # F2
+    select Formant 'baseFile$'
+    To Matrix... 2    
+    Write to matrix text file... 'dir_formant_2$'/'baseFile$'.txt
 
     # CLEAN UP ----------------------
-#    select MelFilter 'baseFile$'    plus 
-   select MFCC 'baseFile$'
+    select MFCC 'baseFile$'
+    plus  Pitch 'baseFile$'
+    plus Formant 'baseFile$'
     plus Matrix 'baseFile$'
     plus Sound 'baseFile$'
     Remove
