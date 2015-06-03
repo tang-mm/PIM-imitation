@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 import numpy
-import bob_gmm
+import bob_gmm, bob.learn.linear
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 
@@ -58,6 +58,7 @@ def get_reduced_matrix_pca(matrix, nb_cluster, directory):
 # --------visualization MFCC -----------
 def visualize_mfcc_2D(data, two_dim_matrix, nb_file, dict_speaker_points, legend_title):
     colors = ['r', 'b', 'g', 'y', 'c', 'm', 'orange', 'navy', 'purple', 'limegreen']
+    my_marker = '+'
     
     fig = plt.figure()
     ax = plt.subplot(111) 	# projection = 3d
@@ -78,7 +79,7 @@ def visualize_mfcc_2D(data, two_dim_matrix, nb_file, dict_speaker_points, legend
             xx.extend(xs)	# append all points of this speaker
             yy.extend(ys)
         
-        ax.scatter(xx, yy, c=colors[count], marker='s', label=speaker)
+        ax.scatter(xx, yy, c=colors[count], marker=my_marker, label=speaker)
         count = count+1
         print speaker, "\nXX:\n", xx
         print speaker, "\nYY:\n", yy
@@ -115,6 +116,7 @@ def visualize_pitch_and_formants(data, nb_cluster, nb_file, dict_speaker_points,
          raise ValueError('Must have at least 2 dimensions!')
     
     colors = ['r', 'b', 'g', 'y', 'c', 'm', 'orange', 'navy', 'purple', 'limegreen']
+    my_marker = '+'
     
     fig = plt.figure()
     if [show_pitch, show_f1, show_f2].count(True) == 2:
@@ -145,19 +147,19 @@ def visualize_pitch_and_formants(data, nb_cluster, nb_file, dict_speaker_points,
             zz.extend(zs)
         
         if [show_pitch, show_f1, show_f2].count(True) == 3:
-            ax.scatter(xx, yy, zz, c=colors[count], marker='+', label=speaker)
+            ax.scatter(xx, yy, zz, c=colors[count], marker=my_marker, label=speaker)
         elif [show_f1, show_f2] == [True, True]:
             ax.set_xlabel('Formant1')
             ax.set_ylabel('Formant2')
-            ax.scatter(yy, zz, c=colors[count], marker='+', label=speaker)
+            ax.scatter(yy, zz, c=colors[count], marker=my_marker, label=speaker)
         elif [show_pitch, show_f1] == [True, True]:
             ax.set_xlabel('Pitch')
             ax.set_ylabel('Formant1')
-            ax.scatter(xx, yy, c=colors[count], marker='+', label=speaker)
+            ax.scatter(xx, yy, c=colors[count], marker=my_marker, label=speaker)
         else:    
             ax.set_xlabel('Pitch')
             ax.set_ylabel('Formant2')
-            ax.scatter(xx, zz, c=colors[count], marker='+', label=speaker)
+            ax.scatter(xx, zz, c=colors[count], marker=my_marker, label=speaker)
             
         count = count+1
         print speaker, "\nXX:\n", xx
@@ -177,12 +179,19 @@ def visualize_pitch_and_formants(data, nb_cluster, nb_file, dict_speaker_points,
  
 # ========== TEST =======
 # file name format: 'Gerra_to_Chirac_1.txt'
-nb_cluster = 32
+nb_cluster = 4
 
-base_dir = '/media/winE/[TelecomParisTech]/Cours-3A/PIM-imitation/test/to_Giscard/'
+# Imitation by the same person
+base_dir = '/media/winE/[TelecomParisTech]/Cours-3A/PIM-imitation/test/Gerra/'
+is_same_speaker = True
+legend_title = 'Gerra\'s Imitation\n--MFCC'
+'''
+ # Imitation to the same person
+base_dir = '/media/winE/[TelecomParisTech]/Cours-3A/PIM-imitation/test/to_Sarkozy/'
 is_same_speaker = False
-legend_title = 'Imitation to Giscard'
-
+legend_title = 'Imitation to Sarkozy\n--MFCC'
+'''
+dir_mfcc = base_dir + 'mfcc/'
 dir_pitch = base_dir + 'pitch/'
 dir_formant1 = base_dir + 'formant_1/'
 dir_formant2 = base_dir + 'formant_2/'
@@ -190,7 +199,7 @@ dir_formant2 = base_dir + 'formant_2/'
 #get_matrix_all_speakers(nb_cluster, dir_formant1, 'formant')
 #get_matrix_all_speakers(nb_cluster, dir_formant2, 'formant')
 
-
+'''
 data, nb_file, dict_speaker_points =  get_matrix_pitch_formant(nb_cluster, dir_pitch, dir_formant1, dir_formant2, is_same_speaker)
 # 3D
 visualize_pitch_and_formants(data, nb_cluster,nb_file, dict_speaker_points, legend_title)
@@ -198,10 +207,9 @@ visualize_pitch_and_formants(data, nb_cluster,nb_file, dict_speaker_points, lege
 visualize_pitch_and_formants(data, nb_cluster,nb_file, dict_speaker_points, legend_title, show_pitch = False)
 visualize_pitch_and_formants(data, nb_cluster,nb_file, dict_speaker_points, legend_title, show_f2 = False)
 visualize_pitch_and_formants(data, nb_cluster,nb_file, dict_speaker_points, legend_title, show_f1 = False)
-
+'''
 #----------Launche MFCC-----------
-'''
-data, nb_file, dict_speaker_points = get_matrix_all_speakers(nb_cluster, directory, 'mfcc')
-two_dim_matrix = get_reduced_matrix_pca(data, nb_cluster, directory)
-visualize_mfcc_2D(data, two_dim_matrix, nb_file, dict_speaker_points)
-'''
+
+data, nb_file, dict_speaker_points = get_matrix_all_speakers(nb_cluster, dir_mfcc, 'mfcc', is_same_speaker)
+two_dim_matrix = get_reduced_matrix_pca(data, nb_cluster, dir_mfcc)
+visualize_mfcc_2D(data, two_dim_matrix, nb_file, dict_speaker_points, legend_title)
