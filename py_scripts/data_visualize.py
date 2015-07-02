@@ -6,7 +6,6 @@
 import numpy as np
 #from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
-
  
 ################################################################
 # --------visualization MFCC -----------
@@ -67,7 +66,8 @@ def visualize_mfcc_2D(data, n_gaussian, two_dim_matrix, n_file, dict_speaker_fil
     fig.savefig(image_name, dpi=300, format='png', bbox_extra_artists=(legend,), bbox_inches='tight')
     plt.show()
 
-  
+
+################################################################
 # ---------- visualization Pitch + 2 Formants --------
 def visualize_pitch_and_formants(data, n_gaussian, n_file, dict_speaker_files, legend_title = '', show_pitch=True, show_f1=True, show_f2=True):
     if [show_pitch, show_f1, show_f2].count(True) != 2 and [show_pitch, show_f1, show_f2].count(True) != 3:
@@ -138,9 +138,10 @@ def visualize_pitch_and_formants(data, n_gaussian, n_file, dict_speaker_files, l
     if [show_pitch, show_f1, show_f2].count(True) != 3:
         fig.savefig(image_name, dpi=300, format='png', bbox_extra_artists=(legend,), bbox_inches='tight')
     plt.show()
- 
 
-#-------------------------------------------------------------
+ 
+################################################################
+#----------Visualize Log-Likelihood-----------------------------
 def visualize_likelihood(dicts_all, target_speaker, n_gaussian):
     colors = ['r', 'b', 'g', 'y', 'c', 'm', 'orange', 'navy', 'purple', 'limegreen']
     my_marker = 'x'
@@ -171,5 +172,44 @@ def visualize_likelihood(dicts_all, target_speaker, n_gaussian):
     
     image_name = target_speaker + '_likelihood_' + str(n_gaussian) + '.png'
     fig.savefig(image_name, dpi=300, format='png') # , bbox_inches='tight')
+    plt.show()
+
+
+######################################################################
+#----------Visualize Average Length of voiced/unvoiced segments----------
+def visualize_segment_length_mean(len_mean_voiced_seg, len_mean_unvoiced_seg, dict_speaker_files, target_speaker, legend_title='', save_image = True):
+    
+    means_voiced = dict()
+    means_unvoiced = dict()
+    # calculate mean of all files of the same speaker 
+    for speaker, idx_files in sorted(dict_speaker_files.items()):
+        means_voiced[speaker] = np.mean(len_mean_voiced_seg[idx_files])
+        means_unvoiced[speaker] = np.mean(len_mean_unvoiced_seg[idx_files])
+    
+    fig, ax = plt.subplots()
+    bar_width = 0.35
+    opacity = 0.4
+    
+    idx_group = np.arange(len(dict_speaker_files))
+    # voiced bars    
+    rects1 = plt.bar(idx_group, means_voiced.values(), bar_width, alpha=opacity, color='b', label='Voiced')
+    # unvoiced bars
+    rects2 = plt.bar(idx_group + bar_width, means_unvoiced.values(), bar_width, alpha=opacity, color='r', label='Unvoiced')
+    
+    plt.xlabel('Speaker')
+    ax.xaxis.set_label_coords(1.05, -0.025)
+    plt.ylabel('Average length (ms)')
+    plt.xticks(idx_group + bar_width, dict_speaker_files.keys() ) #, rotation=30, fontsize='small')
+    fig.suptitle('Voiced / Unvoiced Segments Length', fontsize='medium')
+    
+     # Shrink current axis by 20%
+    box = ax.get_position()
+    ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
+     # add legend
+    legend = ax.legend(loc='center left', title=legend_title, bbox_to_anchor=(1, 0.5), fontsize='small')
+    
+    if save_image == True:
+        image_name = target_speaker + '_segment_length.png'
+        fig.savefig(image_name, dpi=300, format='png', bbox_extra_artists=(legend,)) 
     plt.show()
     
